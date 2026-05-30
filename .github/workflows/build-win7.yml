@@ -57,14 +57,14 @@ jobs:
           GOOS: windows
           GOARCH: amd64
           CGO_ENABLED: "0"
-        run: go build -trimpath -o dist/beszel.exe ./internal/cmd/hub/hub.go
+        run: go build -trimpath -ldflags="-s -w" -o dist/beszel.exe ./internal/cmd/hub/hub.go
 
       - name: Build beszel-agent (Windows amd64)
         env:
           GOOS: windows
           GOARCH: amd64
           CGO_ENABLED: "0"
-        run: go build -trimpath -o dist/beszel-agent.exe ./internal/cmd/agent/agent.go
+        run: go build -trimpath -ldflags="-s -w" -o dist/beszel-agent.exe ./internal/cmd/agent/agent.go
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
