@@ -35,22 +35,19 @@ jobs:
       - name: Download go-win7 patched SDK
         run: |
           GO_VERSION=$(grep '^go ' go.mod | awk '{print $2}')
-          curl -fsSL "https://github.com/XTLS/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o go-win7.zip
-          unzip -q go-win7.zip -d go-win7-sdk
+          curl -fsSL "https://github.com/XTLS/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o /tmp/go-win7.zip
+          unzip -q /tmp/go-win7.zip -d /tmp/go-win7-sdk
           # The zip may have a top-level 'go/' subdir or extract directly
-          if [ -f "go-win7-sdk/go/bin/go" ]; then
-            GO_SDK="$(pwd)/go-win7-sdk/go"
+          if [ -f "/tmp/go-win7-sdk/go/bin/go" ]; then
+            GO_SDK="/tmp/go-win7-sdk/go"
           else
-            GO_SDK="$(pwd)/go-win7-sdk"
+            GO_SDK="/tmp/go-win7-sdk"
           fi
           echo "GOROOT=${GO_SDK}" >> "$GITHUB_ENV"
           echo "${GO_SDK}/bin" >> "$GITHUB_PATH"
 
       - name: Verify Go version
         run: go version
-
-      - name: Run go mod tidy
-        run: go mod tidy
 
       - name: Generate (fetch smartctl)
         run: go generate -run fetchsmartctl ./agent
