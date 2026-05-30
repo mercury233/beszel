@@ -35,7 +35,7 @@ jobs:
       - name: Download go-win7 patched SDK
         run: |
           GO_VERSION=$(grep '^go ' go.mod | awk '{print $2}')
-          curl -fsSL "https://github.com/XTLS/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o /tmp/go-win7.zip
+          curl -fsSL "https://github.com/mercury233/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o /tmp/go-win7.zip
           unzip -q /tmp/go-win7.zip -d /tmp/go-win7-sdk
           # The zip may have a top-level 'go/' subdir or extract directly
           if [ -f "/tmp/go-win7-sdk/go/bin/go" ]; then
