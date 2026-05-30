@@ -37,8 +37,14 @@ jobs:
           GO_VERSION=$(grep '^go ' go.mod | awk '{print $2}')
           curl -fsSL "https://github.com/XTLS/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o go-win7.zip
           unzip -q go-win7.zip -d go-win7-sdk
-          echo "GOROOT=$(pwd)/go-win7-sdk/go" >> "$GITHUB_ENV"
-          echo "$(pwd)/go-win7-sdk/go/bin" >> "$GITHUB_PATH"
+          # The zip may have a top-level 'go/' subdir or extract directly
+          if [ -f "go-win7-sdk/go/bin/go" ]; then
+            GO_SDK="$(pwd)/go-win7-sdk/go"
+          else
+            GO_SDK="$(pwd)/go-win7-sdk"
+          fi
+          echo "GOROOT=${GO_SDK}" >> "$GITHUB_ENV"
+          echo "${GO_SDK}/bin" >> "$GITHUB_PATH"
 
       - name: Verify Go version
         run: go version
