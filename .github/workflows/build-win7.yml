@@ -1,0 +1,71 @@
+name: Build Windows (Win7 compatible)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --no-save --cwd ./internal/site
+
+      - name: Build site
+        run: bun run --cwd ./internal/site build
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build .NET LHM executable for Windows sensors
+        run: dotnet build -c Release ./agent/lhm/beszel_lhm.csproj
+
+      - name: Download go-win7 patched SDK
+        run: |
+          GO_VERSION=$(grep '^go ' go.mod | awk '{print $2}')
+          curl -fsSL "https://github.com/XTLS/go-win7/releases/download/patched-${GO_VERSION}/go-for-win7-linux-amd64.zip" -o go-win7.zip
+          unzip -q go-win7.zip -d go-win7-sdk
+          echo "GOROOT=$(pwd)/go-win7-sdk/go" >> "$GITHUB_ENV"
+          echo "$(pwd)/go-win7-sdk/go/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Go version
+        run: go version
+
+      - name: Run go mod tidy
+        run: go mod tidy
+
+      - name: Generate (fetch smartctl)
+        run: go generate -run fetchsmartctl ./agent
+
+      - name: Build beszel hub (Windows amd64)
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: go build -trimpath -o dist/beszel.exe ./internal/cmd/hub/hub.go
+
+      - name: Build beszel-agent (Windows amd64)
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: go build -trimpath -o dist/beszel-agent.exe ./internal/cmd/agent/agent.go
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-win7-amd64
+          path: dist/
+          retention-days: 30
