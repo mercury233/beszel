@@ -52,13 +52,6 @@ jobs:
       - name: Generate (fetch smartctl)
         run: go generate -run fetchsmartctl ./agent
 
-      - name: Build beszel hub (Windows amd64)
-        env:
-          GOOS: windows
-          GOARCH: amd64
-          CGO_ENABLED: "0"
-        run: go build -trimpath -ldflags="-s -w" -o dist/beszel.exe ./internal/cmd/hub/hub.go
-
       - name: Build beszel-agent (Windows amd64)
         env:
           GOOS: windows
